@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports: 
+      - 8080:8080
+    depends_on: 
+      - db
+    environment:
+      ConnectionStrings__DefaultConnection: Host=192.168.100.6;Database=CaseManagementDB;Username=postgres;Password=1602
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1602
+      POSTGRES_DB: CaseManagementDB
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
