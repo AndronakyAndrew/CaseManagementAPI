@@ -1,7 +1,6 @@
 ﻿using CaseManagementAPI.Contracts;
 using CaseManagementAPI.Data;
 using CaseManagementAPI.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -43,7 +42,7 @@ namespace CaseManagementAPI.Controllers
                 Name = request.Username,
                 Email = request.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                Role = "Пользователь",
+                Role = request.Role,
                 TenantId = Guid.NewGuid()
             };
 
@@ -51,7 +50,7 @@ namespace CaseManagementAPI.Controllers
             await _db.Users.AddAsync(user);
             await _db.SaveChangesAsync();
 
-            return Ok($"User successfully registered.With role: {user.Role}");
+            return Ok($"User successfully registered. With role: {user.Role}");
         }
 
         [HttpPost("login")]
@@ -60,13 +59,10 @@ namespace CaseManagementAPI.Controllers
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Name == request.Username);
 
             if(user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            {
-                return Unauthorized("Wrong username or password");
-            }
+                return Unauthorized("Имя пользователя или пароль не верны!");
 
             var token = GenerateJwtToken(user);
-            return Ok(new { Token = token });
-        }
+            return Ok(new { Token = token });        }
 
         private string GenerateJwtToken(User user)
         {

@@ -9,7 +9,7 @@ namespace CaseManagementAPI.Data
         public required DbSet<User> Users { get; set; }
         public required virtual DbSet<Case> Cases { get; set; }
         public required DbSet<Document> Documents { get; set; }
-        public required DbSet<Subscription> Subscriptions { get; set; }
+        public required virtual DbSet<Subscription> Subscriptions { get; set; }
 
         public AppDBContext(DbContextOptions<AppDBContext> options) : base(options) { }
 

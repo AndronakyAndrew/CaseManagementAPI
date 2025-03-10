@@ -2,7 +2,6 @@
 using CaseManagementAPI.Data;
 using CaseManagementAPI.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,14 +34,15 @@ namespace CaseManagementAPI.Controllers
 
         //Create a new user (admin only)
         [Authorize(Roles = "admin")]
-        [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateUser([FromForm] CreateUserRequest request)
         {
             var tenantId = Guid.Parse(User.FindFirst("TenantId")?.Value);
             var user = new User
             {
                 TenantId = tenantId,
                 Name = request.Username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Email = request.Email,
                 Role = request.Role
             };
@@ -54,7 +54,7 @@ namespace CaseManagementAPI.Controllers
         //Update user (admin only)
         [Authorize(Roles = "admin")]
         [HttpPut("{userId}")]
-        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserRequest request)
+        public async Task<IActionResult> UpdateUser(Guid userId, [FromForm] UpdateUserRequest request)
         {
             var tenantId = Guid.Parse(User.FindFirst("TenantId")?.Value);
             var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId && u.TenantId == tenantId);

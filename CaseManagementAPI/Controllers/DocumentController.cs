@@ -1,7 +1,6 @@
 ﻿using CaseManagementAPI.Data;
 using CaseManagementAPI.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -48,7 +47,7 @@ namespace CaseManagementAPI.Controllers
                 CaseId = caseId,
                 FileName = file.FileName,
                 FilePath = filePath,
-                UploadedBy = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value),
+                UploadedBy = tenantId,
                 TenantId = tenantId
             };
 
@@ -89,8 +88,14 @@ namespace CaseManagementAPI.Controllers
         [HttpDelete("{documentId}")]
         public async Task<IActionResult> DeleteDocuments(Guid documentId)
         {
-            var tenantId = Guid.Parse(User.FindFirst("TenantId")?.Value);
-            var document = await _db.Documents.FirstOrDefaultAsync(d => d.DocumentId == documentId && d.TenantId == tenantId);
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+
+            if (string.IsNullOrEmpty(tenantIdClaim))
+                return Unauthorized("TenantId claim is missing.");
+
+            var tenantId = Guid.Parse(tenantIdClaim);
+            var document = await _db.Documents
+                .FirstOrDefaultAsync(d => d.DocumentId == documentId && d.TenantId == tenantId);
 
             if(document == null) 
                 return NotFound("Document does not exist!");

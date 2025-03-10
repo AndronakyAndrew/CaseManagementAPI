@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-       builder => builder.WithOrigins("https://localhost:5000")
+       builder => builder.WithOrigins("http://localhost:3000")
                           .AllowAnyHeader()
                           .AllowAnyMethod());
 });
@@ -49,8 +49,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");
+app.UseHttpsRedirection();
+app.UseAuthentication(); 
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
